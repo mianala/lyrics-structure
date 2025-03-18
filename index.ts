@@ -8,16 +8,10 @@
 export const getParts = (text?: string): string[] => {
     if (!text) return [];
   
-    // Add validation for malformed brackets
-    const bracketPairs = text.match(/\[(.*?)\]([\s\S]*?)\[\/\1\]/g) || [];
-    const openBrackets = text.match(/\[[^\]]*\]/g) || [];
-    
-    if (bracketPairs.length * 2 !== openBrackets.length) {
-        console.warn('Warning: Text contains unmatched brackets');
-    }
-  
     // Process parts in brackets and create a map
     const partsMap = new Map<string, string>();
+    
+    // First pass: extract all content with closing tags
     const cleanedText = text.replace(
         /\[(.*?)\]([\s\S]*?)\[\/\1\]/g,
         (match, key, content) => {
@@ -27,9 +21,22 @@ export const getParts = (text?: string): string[] => {
             return `[${key}]`;
         },
     );
+    
+    // Second pass: handle validation and solo tags that should reuse content
+    const processedText = cleanedText.replace(
+        /\[([^\]]+)\](?!\s*\[\/)(?!\s*\])/g, // Match tags that don't have a closing tag after them
+        (match, key) => {
+            if (partsMap.has(key)) {
+                return match; // Keep the reference if we already have content for this key
+            } else {
+                console.warn(`Warning: Tag [${key}] has no content and was not previously defined`);
+                return ''; // Remove invalid tags
+            }
+        }
+    );
   
     const result: string[] = [];
-    const parts = cleanedText
+    const parts = processedText
         .trim()
         .split(/\[([^\]]+)\]/)
         .filter(Boolean);
@@ -52,9 +59,10 @@ export const getParts = (text?: string): string[] => {
  * Works with plain text without requiring markdown or special formatting.
  * 
  * @param text - The input text to be split into sections
+ * @param maxLinesPerSlide - Maximum number of lines to include in a single slide (default: 6)
  * @returns An array of content sections
  */
-export const getSlideParts = (text?: string): string[] => {
+export const getSlideParts = (text?: string, maxLinesPerSlide: number = 6): string[] => {
     if (!text) return [];
 
     // Extract bracketed content first
@@ -62,17 +70,43 @@ export const getSlideParts = (text?: string): string[] => {
     const result: string[] = [];
     
     basicParts.forEach(part => {
-        // Split by natural paragraph breaks (empty lines)
-        const paragraphs = part.split(/\n\s*\n/)
-            .filter(p => p.trim().length > 0)
-            .map(p => p.trim());
+        // Check if content has line breaks that should be respected
+        const lines = part.split('\n').filter(line => line.trim().length > 0);
         
-        // If we have multiple paragraphs, use those as natural breaks
-        if (paragraphs.length > 1) {
-            result.push(...paragraphs);
+        // If we have multiple lines and more than maxLinesPerSlide, create slides based on line count
+        if (lines.length > 1) {
+            if (lines.length > maxLinesPerSlide) {
+                // Break into multiple slides based on maxLinesPerSlide
+                let currentSlide: string[] = [];
+                
+                lines.forEach(line => {
+                    if (currentSlide.length >= maxLinesPerSlide) {
+                        result.push(currentSlide.join('\n'));
+                        currentSlide = [];
+                    }
+                    currentSlide.push(line);
+                });
+                
+                // Add the final slide if it exists
+                if (currentSlide.length > 0) {
+                    result.push(currentSlide.join('\n'));
+                }
+            } else {
+                // Split by natural paragraph breaks (empty lines)
+                const paragraphs = part.split(/\n\s*\n/)
+                    .filter(p => p.trim().length > 0)
+                    .map(p => p.trim());
+                
+                // If we have multiple paragraphs, use those as natural breaks
+                if (paragraphs.length > 1) {
+                    result.push(...paragraphs);
+                } else {
+                    // Just use the whole part as a single slide
+                    result.push(part);
+                }
+            }
         } else {
-            // For single large paragraphs, try to find natural sentence groups
-            // This handles cases with no paragraph breaks
+            // For single large paragraphs (no line breaks), try to find natural sentence groups
             const sentences = part.split(/(?<=[.!?])\s+/)
                 .filter(s => s.trim().length > 0);
             
