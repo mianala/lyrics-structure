@@ -47,64 +47,66 @@ export const getParts = (text?: string): string[] => {
     return result;
 }
 
-// Add these at the top of the file
-const MAX_LINE_LENGTH = 40;
-const MAX_SLIDES_PER_SECTION = 4;
-const MIN_LONG_LINES_THRESHOLD = 2;
-
 /**
- * Splits text into paragraphs based on content length and formatting rules.
- * Uses getParts to handle bracketed content and then applies additional formatting.
+ * Splits text into natural sections based on text structure.
+ * Works with plain text without requiring markdown or special formatting.
  * 
- * @param text - The input text to be split into paragraphs
- * @returns An array of paragraph strings
+ * @param text - The input text to be split into sections
+ * @returns An array of content sections
  */
 export const getSlideParts = (text?: string): string[] => {
     if (!text) return [];
 
-    const isLineTooLong = (line: string): boolean => line.length > MAX_LINE_LENGTH;
-
-    const processContent = (content: string): string[] => {
-        const slides: string[] = [];
-        let currentSlide: string[] = [];
-    
-        content.split("\n").forEach((line) => {
-            const trimmedLine = line.trim();
-    
-            if (!trimmedLine) {
-                if (currentSlide.length > 0) {
-                    slides.push(currentSlide.join("\n"));
-                    currentSlide = [];
-                }
-                return;
-            }
-    
-            if (
-                currentSlide.length >= MAX_SLIDES_PER_SECTION ||
-                (currentSlide.length >= MIN_LONG_LINES_THRESHOLD &&
-                currentSlide.filter(isLineTooLong).length >= MIN_LONG_LINES_THRESHOLD)
-            ) {
-                slides.push(currentSlide.join("\n"));
-                currentSlide = [];
-            }
-    
-            currentSlide.push(trimmedLine);
-        });
-    
-        if (currentSlide.length > 0) {
-            slides.push(currentSlide.join("\n"));
-        }
-    
-        return slides;
-    };
-
-    // Get the basic parts first
+    // Extract bracketed content first
     const basicParts = getParts(text);
-    
-    // Process each part according to the slide rules
     const result: string[] = [];
+    
     basicParts.forEach(part => {
-        result.push(...processContent(part));
+        // Split by natural paragraph breaks (empty lines)
+        const paragraphs = part.split(/\n\s*\n/)
+            .filter(p => p.trim().length > 0)
+            .map(p => p.trim());
+        
+        // If we have multiple paragraphs, use those as natural breaks
+        if (paragraphs.length > 1) {
+            result.push(...paragraphs);
+        } else {
+            // For single large paragraphs, try to find natural sentence groups
+            // This handles cases with no paragraph breaks
+            const sentences = part.split(/(?<=[.!?])\s+/)
+                .filter(s => s.trim().length > 0);
+            
+            // Group sentences into reasonable chunks
+            const sentenceGroups: string[] = [];
+            let currentGroup: string[] = [];
+            let currentLength = 0;
+            
+            sentences.forEach(sentence => {
+                // Natural breakpoint based on content and length
+                // Group 3-5 sentences together or until we reach ~300 chars
+                if (currentGroup.length >= 4 || currentLength > 250) {
+                    sentenceGroups.push(currentGroup.join(' '));
+                    currentGroup = [];
+                    currentLength = 0;
+                }
+                
+                currentGroup.push(sentence);
+                currentLength += sentence.length;
+            });
+            
+            // Add the last group if it exists
+            if (currentGroup.length > 0) {
+                sentenceGroups.push(currentGroup.join(' '));
+            }
+            
+            // If we created multiple groups, use them
+            if (sentenceGroups.length > 1) {
+                result.push(...sentenceGroups);
+            } else {
+                // Otherwise just use the whole part
+                result.push(part);
+            }
+        }
     });
 
     return result;
