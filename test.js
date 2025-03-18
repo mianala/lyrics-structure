@@ -49,6 +49,29 @@ be one slide
 very long line that should be split into two lines but has been sent on one line intead
 `;
 
+// Added test data for empty line separation
+const emptyLineSeparatedSample = `
+1-Ry Tompo Andriamanitra Andriananahary!
+Nasainao manohy ary mandavorary.
+Ny zava-boaaary eran-tany izahay
+Mitory fitiavana lalina izany.
+
+Nomenao ho ohatra ilay Zanakao, Misaotra ê!
+Ka niasa, nisasatra teto aminay, Misaotra ê!
+Manjary asa masina izao ny asanay, Misaotra ê!
+Mitory fitiavana lalina izany, Misaotra ê!
+
+2-Matoky izahay fa mitantana Ianao,
+Manoro izay asa sahaza ho anay.
+Satria sitrakao ny hahasambatra anay,
+Mitory fitiavana lalina izany
+
+Ry Rainay Mpahary ô tahio ny asany, Tahio é!
+Tahio mba ho mendrika marina Anao, Tahio é!
+Fa miaraka miasa amin'i Jesoa izahay, Tahio é!
+Manomana tany sy lanitra vao, Tahio é!
+`;
+
 console.log('Running tests for text processing functions...');
 
 // Test getParts with lyrics
@@ -129,6 +152,19 @@ longLineSlides.forEach((slide, i) => {
     console.log(slide);
     console.log('-'.repeat(40));
 });
+
+// Test for empty line separation
+console.log('\n----- Testing getSlideParts with empty line separations -----');
+const emptyLineSeparatedSlides = getSlideParts(emptyLineSeparatedSample);
+console.log(`Found ${emptyLineSeparatedSlides.length} slides for empty line separated text`);
+emptyLineSeparatedSlides.forEach((slide, i) => {
+    console.log(`\nSlide ${i + 1}:`);
+    console.log('-'.repeat(40));
+    console.log(slide);
+    console.log('-'.repeat(40));
+});
+// Should produce 4 slides (one for each paragraph separated by empty lines)
+assert.strictEqual(emptyLineSeparatedSlides.length, 4, 'Should extract 4 parts from text separated by empty lines');
 
 // Test edge cases
 console.log('\n----- Testing edge cases -----');
