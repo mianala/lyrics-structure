@@ -5,8 +5,16 @@
  * @param text - The input text to be split into parts
  * @returns An array of content strings
  */
-export const getParts = (text?: string) => {
+export const getParts = (text?: string): string[] => {
     if (!text) return [];
+  
+    // Add validation for malformed brackets
+    const bracketPairs = text.match(/\[(.*?)\]([\s\S]*?)\[\/\1\]/g) || [];
+    const openBrackets = text.match(/\[[^\]]*\]/g) || [];
+    
+    if (bracketPairs.length * 2 !== openBrackets.length) {
+        console.warn('Warning: Text contains unmatched brackets');
+    }
   
     // Process parts in brackets and create a map
     const partsMap = new Map<string, string>();
@@ -39,6 +47,11 @@ export const getParts = (text?: string) => {
     return result;
 }
 
+// Add these at the top of the file
+const MAX_LINE_LENGTH = 40;
+const MAX_SLIDES_PER_SECTION = 4;
+const MIN_LONG_LINES_THRESHOLD = 2;
+
 /**
  * Splits text into paragraphs based on content length and formatting rules.
  * Uses getParts to handle bracketed content and then applies additional formatting.
@@ -46,10 +59,10 @@ export const getParts = (text?: string) => {
  * @param text - The input text to be split into paragraphs
  * @returns An array of paragraph strings
  */
-export const getSlideParts = (text?: string) => {
+export const getSlideParts = (text?: string): string[] => {
     if (!text) return [];
 
-    const isLineTooLong = (line: string) => line.length > 40;
+    const isLineTooLong = (line: string): boolean => line.length > MAX_LINE_LENGTH;
 
     const processContent = (content: string): string[] => {
         const slides: string[] = [];
@@ -67,9 +80,9 @@ export const getSlideParts = (text?: string) => {
             }
     
             if (
-                currentSlide.length >= 4 ||
-                (currentSlide.length >= 2 &&
-                currentSlide.filter(isLineTooLong).length >= 2)
+                currentSlide.length >= MAX_SLIDES_PER_SECTION ||
+                (currentSlide.length >= MIN_LONG_LINES_THRESHOLD &&
+                currentSlide.filter(isLineTooLong).length >= MIN_LONG_LINES_THRESHOLD)
             ) {
                 slides.push(currentSlide.join("\n"));
                 currentSlide = [];
