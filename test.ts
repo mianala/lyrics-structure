@@ -77,7 +77,7 @@ bibleParts.forEach((part, i) => {
     console.log(`\nPart ${i + 1}:`);
     console.log(part);
 });
-assert.strictEqual(bibleParts.length, 2, 'Should extract 2 parts from Bible verses (main text and psalm23)');
+assert.strictEqual(bibleParts.length, 3, 'Should extract 3 parts from Bible verses (main text, psalm23, and the "five short lines" section)');
 
 // Test getSlideParts with lyrics
 console.log('\n----- Testing getSlideParts with lyrics -----');
@@ -112,4 +112,62 @@ bibleSlidesTighter.forEach((slide, i) => {
     console.log('-'.repeat(40));
 });
 
-console.log('\nAll tests completed successfully!'); 
+// Test handling of long lines that need to be split
+console.log('\n----- Testing getSlideParts with long lines -----');
+const longLineText = `
+This is a normal line.
+This is another normal line.
+very long line that should be split into two lines but has been sent on one line instead and should be handled properly by the getSlideParts function for better readability
+Last normal line.
+`;
+
+const longLineSlides = getSlideParts(longLineText);
+console.log(`Found ${longLineSlides.length} slides for long line text`);
+longLineSlides.forEach((slide, i) => {
+    console.log(`\nSlide ${i + 1}:`);
+    console.log('-'.repeat(40));
+    console.log(slide);
+    console.log('-'.repeat(40));
+});
+
+// Test edge cases
+console.log('\n----- Testing edge cases -----');
+
+// Empty string
+const emptyResult = getSlideParts('');
+console.log(`Empty string produced ${emptyResult.length} slides`);
+assert.strictEqual(emptyResult.length, 0, 'Empty string should produce 0 slides');
+
+// Single line
+const singleLineResult = getSlideParts('Just one line');
+console.log(`Single line produced ${singleLineResult.length} slides`);
+console.log(singleLineResult[0]);
+assert.strictEqual(singleLineResult.length, 1, 'Single line should produce 1 slide');
+assert.strictEqual(singleLineResult[0], 'Just one line', 'Content should match input');
+
+// Nested tags
+const nestedTagsText = `
+[outer]
+Some text
+[inner]
+Nested content
+[/inner]
+More outer text
+[/outer]
+`;
+
+const nestedParts = getParts(nestedTagsText);
+console.log('\nNested tags test:');
+console.log(`Found ${nestedParts.length} parts`);
+nestedParts.forEach((part, i) => {
+    console.log(`Part ${i + 1}: ${part}`);
+});
+
+// Test with maxLinesPerSlide = 1 (extreme case)
+console.log('\n----- Testing with maxLinesPerSlide = 1 -----');
+const extremeSlides = getSlideParts(bibleSample, 1);
+console.log(`Found ${extremeSlides.length} slides with maxLinesPerSlide = 1`);
+assert.ok(extremeSlides.length > bibleSlides.length, 'Setting maxLinesPerSlide = 1 should produce more slides');
+
+console.log('\nAll tests completed successfully!');
+console.log('\nAll additional tests completed successfully!'); 
