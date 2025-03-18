@@ -1,6 +1,6 @@
 {
   "name": "lyrics-structure",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -10,7 +10,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "description": "",
   "devDependencies": {
     "@types/node": "^22.13.10",
