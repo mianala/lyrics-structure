@@ -66,7 +66,21 @@ export const getParts = (text?: string): string[] => {
 export const getSlideParts = (text?: string, maxLinesPerSlide: number = 6): string[] => {
     if (!text) return [];
 
-    // First split by empty lines to respect user-defined separations
+    // Process parts in brackets and create a map for the entire text first
+    const partsMap = new Map<string, string>();
+    
+    // Extract all content with closing tags
+    text.replace(
+        /\[(.*?)\]([\s\S]*?)\[\/\1\]/g,
+        (match, key, content) => {
+            if (!partsMap.has(key)) {
+                partsMap.set(key, content.trim());
+            }
+            return match; // Return original match to not modify the text yet
+        },
+    );
+
+    // Now split by empty lines to respect user-defined separations
     const paragraphBlocks = text.split(/\n\s*\n/)
         .filter(block => block.trim().length > 0)
         .map(block => block.trim());
@@ -75,73 +89,87 @@ export const getSlideParts = (text?: string, maxLinesPerSlide: number = 6): stri
     
     // Process each paragraph block separately
     paragraphBlocks.forEach(block => {
-        // Process bracketed content within each block
-        const blockParts = getParts(block);
-        
-        blockParts.forEach(part => {
-            // Check if content has line breaks that should be respected
-            const lines = part.split('\n').filter(line => line.trim().length > 0);
-            
-            // If we have multiple lines and more than maxLinesPerSlide, create slides based on line count
-            if (lines.length > 1) {
-                if (lines.length > maxLinesPerSlide) {
-                    // Break into multiple slides based on maxLinesPerSlide
-                    let currentSlide: string[] = [];
-                    
-                    lines.forEach(line => {
-                        if (currentSlide.length >= maxLinesPerSlide) {
-                            result.push(currentSlide.join('\n'));
-                            currentSlide = [];
-                        }
-                        currentSlide.push(line);
-                    });
-                    
-                    // Add the final slide if it exists
-                    if (currentSlide.length > 0) {
-                        result.push(currentSlide.join('\n'));
-                    }
-                } else {
-                    // Just use the whole part as a single slide
-                    result.push(part);
-                }
-            } else {
-                // For single large paragraphs (no line breaks), try to find natural sentence groups
-                const sentences = part.split(/(?<=[.!?])\s+/)
-                    .filter(s => s.trim().length > 0);
-                
-                // Group sentences into reasonable chunks
-                const sentenceGroups: string[] = [];
-                let currentGroup: string[] = [];
-                let currentLength = 0;
-                
-                sentences.forEach(sentence => {
-                    // Natural breakpoint based on content and length
-                    // Group 3-5 sentences together or until we reach ~300 chars
-                    if (currentGroup.length >= 4 || currentLength > 250) {
-                        sentenceGroups.push(currentGroup.join(' '));
-                        currentGroup = [];
-                        currentLength = 0;
-                    }
-                    
-                    currentGroup.push(sentence);
-                    currentLength += sentence.length;
-                });
-                
-                // Add the last group if it exists
-                if (currentGroup.length > 0) {
-                    sentenceGroups.push(currentGroup.join(' '));
-                }
-                
-                // If we created multiple groups, use them
-                if (sentenceGroups.length > 1) {
-                    result.push(...sentenceGroups);
-                } else {
-                    // Otherwise just use the whole part
-                    result.push(part);
-                }
-            }
-        });
+        // Check if this block is a solo tag reference
+        const soloTagMatch = block.match(/^\s*\[([^\]]+)\]\s*$/);
+        if (soloTagMatch && partsMap.has(soloTagMatch[1])) {
+            // This is a solo tag reference, process the referenced content
+            const referencedContent = partsMap.get(soloTagMatch[1])!;
+            processContent(referencedContent, result, maxLinesPerSlide);
+        } else {
+            // Process bracketed content within this regular block
+            const blockParts = getParts(block);
+            blockParts.forEach(part => {
+                processContent(part, result, maxLinesPerSlide);
+            });
+        }
     });
 
     return result;
+}
+
+/**
+ * Helper function to process content and add it to the result array
+ */
+function processContent(content: string, result: string[], maxLinesPerSlide: number): void {
+    // Check if content has line breaks that should be respected
+    const lines = content.split('\n').filter(line => line.trim().length > 0);
+    
+    // If we have multiple lines and more than maxLinesPerSlide, create slides based on line count
+    if (lines.length > 1) {
+        if (lines.length > maxLinesPerSlide) {
+            // Break into multiple slides based on maxLinesPerSlide
+            let currentSlide: string[] = [];
+            
+            lines.forEach(line => {
+                if (currentSlide.length >= maxLinesPerSlide) {
+                    result.push(currentSlide.join('\n'));
+                    currentSlide = [];
+                }
+                currentSlide.push(line);
+            });
+            
+            // Add the final slide if it exists
+            if (currentSlide.length > 0) {
+                result.push(currentSlide.join('\n'));
+            }
+        } else {
+            // Just use the whole content as a single slide
+            result.push(content);
+        }
+    } else {
+        // For single large paragraphs (no line breaks), try to find natural sentence groups
+        const sentences = content.split(/(?<=[.!?])\s+/)
+            .filter(s => s.trim().length > 0);
+        
+        // Group sentences into reasonable chunks
+        const sentenceGroups: string[] = [];
+        let currentGroup: string[] = [];
+        let currentLength = 0;
+        
+        sentences.forEach(sentence => {
+            // Natural breakpoint based on content and length
+            // Group 3-5 sentences together or until we reach ~300 chars
+            if (currentGroup.length >= 4 || currentLength > 250) {
+                sentenceGroups.push(currentGroup.join(' '));
+                currentGroup = [];
+                currentLength = 0;
+            }
+            
+            currentGroup.push(sentence);
+            currentLength += sentence.length;
+        });
+        
+        // Add the last group if it exists
+        if (currentGroup.length > 0) {
+            sentenceGroups.push(currentGroup.join(' '));
+        }
+        
+        // If we created multiple groups, use them
+        if (sentenceGroups.length > 1) {
+            result.push(...sentenceGroups);
+        } else {
+            // Otherwise just use the whole part
+            result.push(content);
+        }
+    }
 }
