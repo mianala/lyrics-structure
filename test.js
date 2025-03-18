@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { getParts, getSlideParts } from './index';
+import { getParts, getSlideParts } from './index.js';
 
 // Test data
 const lyricsSample = `
