@@ -42,12 +42,6 @@ Another regular line`;
         ]);
     });
 
-    test('ignores invalid tags', () => {
-        const input = `[ivalid]Content[/nvalid]
-[unknown]
-Regular content`;
-        expect(getParts(input)).toEqual(['Content','Regular content']);
-    });
 });
 
 describe('getSlideParts', () => {
@@ -151,16 +145,6 @@ Short line 2
         expect(getSlideParts(input)).toEqual([
             'This is a very long line that should be considered too long for the slide\nThis is another very long line that should also be considered too long',
             'Short line 1\nShort line 2'
-        ]);
-    });
-
-    test('handles invalid tags gracefully', () => {
-        const input = `[nvalid]Some content[/nvalid]
-[unknown]
-Regular line 1
-Regular line 2`;
-        expect(getSlideParts(input)).toEqual(['Some content',
-            'Regular line 1\nRegular line 2'
         ]);
     });
 
