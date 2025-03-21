@@ -178,6 +178,19 @@ More content`;
     test('handles special bracket with text', () => {
         expect(getSlideParts('[!🎸🎹🎺]Hello, world!')).toEqual(['🎸🎹🎺','Hello, world!']);
     });
+
+    test('handles special command tags with long lines', () => {
+        const input = `This is a very long line that exceeds forty characters for testing purposes
+This is another very long line that also exceeds the forty character limit
+Another very long line that should be considered too long for the slide
+And yet another very long line that should be split into a new section
+Regular line`;
+        expect(getSlideParts(input)).toEqual([
+            'This is a very long line that exceeds forty characters for testing purposes\nThis is another very long line that also exceeds the forty character limit',
+            'Another very long line that should be considered too long for the slide\nAnd yet another very long line that should be split into a new section',
+            'Regular line'
+        ]);
+    });
 });
 
 describe('getParts additional cases', () => {
