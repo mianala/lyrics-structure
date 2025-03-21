@@ -1,4 +1,3 @@
-
 /**
  * Splits text into parts based on bracketed content while maintaining its structure.
  * Does not consider line length or formatting.
@@ -40,7 +39,8 @@ export const getParts = (text?: string): string[] => {
     const parts = processedText
         .trim()
         .split(/\[([^\]]+)\]/)
-        .filter(Boolean);
+        .filter(Boolean)
+        .filter(part => !part.startsWith('!')); // Filter out special command tags
   
     parts.forEach((part) => {
         if (partsMap.has(part)) {

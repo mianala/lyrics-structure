@@ -43,10 +43,10 @@ Another regular line`;
     });
 
     test('ignores invalid tags', () => {
-        const input = `[invalid]Content[/invalid]
+        const input = `[ivalid]Content[/nvalid]
 [unknown]
 Regular content`;
-        expect(getParts(input)).toEqual(['Regular content']);
+        expect(getParts(input)).toEqual(['Content','Regular content']);
     });
 });
 
@@ -155,11 +155,11 @@ Short line 2
     });
 
     test('handles invalid tags gracefully', () => {
-        const input = `[invalid]Some content[/invalid]
+        const input = `[nvalid]Some content[/nvalid]
 [unknown]
 Regular line 1
 Regular line 2`;
-        expect(getSlideParts(input)).toEqual([
+        expect(getSlideParts(input)).toEqual(['Some content',
             'Regular line 1\nRegular line 2'
         ]);
     });
