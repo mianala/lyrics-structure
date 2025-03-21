@@ -22,15 +22,21 @@ export const getParts = (text?: string): string[] => {
         },
     );
     
-    // Second pass: handle validation and solo tags that should reuse content
+    // Handle special command tags first
     const processedText = cleanedText.replace(
-        /\[([^\]]+)\](?!\s*\[\/)(?!\s*\])/g, // Match tags that don't have a closing tag after them
+        /\[!([^\]]+)\]([^\[]*)/g,
+        (match, command, followingContent) => {
+            result.push(command);
+            return followingContent || '';
+        }
+    ).replace(
+        /\[([^\]]+)\](?!\s*\[\/)(?!\s*\])/g,
         (match, key) => {
             if (partsMap.has(key)) {
-                return match; // Keep the reference if we already have content for this key
+                return match;
             } else {
                 console.warn(`Warning: Tag [${key}] has no content and was not previously defined`);
-                return ''; // Remove invalid tags
+                return '';
             }
         }
     );
@@ -39,15 +45,12 @@ export const getParts = (text?: string): string[] => {
     const parts = processedText
         .trim()
         .split(/\[([^\]]+)\]/)
-        .filter(Boolean)
-        .filter(part => !part.startsWith('!')); // Filter out special command tags
+        .filter(Boolean);
   
     parts.forEach((part) => {
         if (partsMap.has(part)) {
-            // Add the stored part content
             result.push(partsMap.get(part)!);
         } else if (part.trim()) {
-            // Add non-bracketed content
             result.push(part.trim());
         }
     });
@@ -67,72 +70,85 @@ export const getParts = (text?: string): string[] => {
  */
 
 export const getSlideParts = (text?: string): string[]  => {
-        if (!text) return [];
-      
-        const isLineTooLong = (line: string) => line.length > 40;
-      
-        // Process parts in brackets and create a map
-        const partsMap = new Map<string, string>();
-        const cleanedText = text.replace(
-          /\[(.*?)\]([\s\S]*?)\[\/\1\]/g,
-          (match, key: string, content) => {
+    if (!text) return [];
+  
+    const isLineTooLong = (line: string) => line.length > 40;
+  
+    // Process parts in brackets and create a map
+    const partsMap = new Map<string, string>();
+    
+    // First pass: extract all content with closing tags
+    const cleanedText = text.replace(
+        /\[(.*?)\]([\s\S]*?)\[\/\1\]/g,
+        (match, key: string, content) => {
             if (!partsMap.has(key)) {
-              partsMap.set(key, content.trim());
+                partsMap.set(key, content.trim());
             }
             return `[${key}]`;
-          },
-        );
-      
-        const processContent = (content: string): string[] => {
-          const slides: string[] = [];
-          let currentSlide: string[] = [];
-      
-          content.split("\n").forEach((line) => {
-            const trimmedLine = line.trim();
-      
-            if (!trimmedLine) {
-              if (currentSlide.length > 0) {
-                slides.push(currentSlide.join("\n"));
-                currentSlide = [];
-              }
-              return;
+        }
+    );
+
+    // Handle special command tags
+    const processedText = cleanedText.replace(
+        /\[!([^\]]+)\]/g,
+        (match, command) => {
+            // Store the command in the parts map with a special prefix
+            const key = `!${command}`;
+            if (!partsMap.has(key)) {
+                partsMap.set(key, command);
             }
-      
+            return `[${key}]`;
+        }
+    );
+  
+    const processContent = (content: string): string[] => {
+        const slides: string[] = [];
+        let currentSlide: string[] = [];
+  
+        content.split("\n").forEach((line) => {
+            const trimmedLine = line.trim();
+  
+            if (!trimmedLine) {
+                if (currentSlide.length > 0) {
+                    slides.push(currentSlide.join("\n"));
+                    currentSlide = [];
+                }
+                return;
+            }
+  
             if (
-              currentSlide.length >= 4 ||
-              (currentSlide.length >= 2 &&
+                currentSlide.length >= 4 ||
+                (currentSlide.length >= 2 &&
                 currentSlide.filter(isLineTooLong).length >= 2)
             ) {
-              slides.push(currentSlide.join("\n"));
-              currentSlide = [];
+                slides.push(currentSlide.join("\n"));
+                currentSlide = [];
             }
-      
+  
             currentSlide.push(trimmedLine);
-          });
-      
-          if (currentSlide.length > 0) {
+        });
+  
+        if (currentSlide.length > 0) {
             slides.push(currentSlide.join("\n"));
-          }
-      
-          return slides;
-        };
-      
-        const result: string[] = [];
-        const parts = cleanedText
-          .trim()
-          .split(/\[([^\]]+)\]/)
-          .filter(Boolean);
-      
-        parts.forEach((part) => {
-          if (partsMap.has(part)) {
-            // Process the stored part content
+        }
+  
+        return slides;
+    };
+  
+    const result: string[] = [];
+    const parts = processedText
+        .trim()
+        .split(/\[([^\]]+)\]/)
+        .filter(Boolean);
+  
+    parts.forEach((part) => {
+        if (partsMap.has(part)) {
             const partContent = partsMap.get(part)!;
             result.push(...processContent(partContent));
-          } else if (part.trim()) {
-            // Process non-bracketed content
+        } else if (part.trim()) {
             result.push(...processContent(part));
-          }
-        });
-      
-        return result;
-      };
+        }
+    });
+  
+    return result;
+};

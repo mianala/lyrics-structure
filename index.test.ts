@@ -157,6 +157,27 @@ Short line 2
             'First line with spaces\nSecond line with spaces'
         ]);
     });
+
+    test('handles special command tags', () => {
+        const input = `[!section1]
+Regular line 1
+Regular line 2
+
+[!section2]
+More content`;
+        expect(getSlideParts(input)).toEqual([
+            'section1','Regular line 1\nRegular line 2',
+            'section2','More content'
+        ]);
+    });
+
+    test('handles special bracket', () => {
+        expect(getSlideParts('[!instrumental]')).toEqual(['instrumental']);
+    });
+
+    test('handles special bracket with text', () => {
+        expect(getSlideParts('[!🎸🎹🎺]Hello, world!')).toEqual(['🎸🎹🎺','Hello, world!']);
+    });
 });
 
 describe('getParts additional cases', () => {
@@ -177,11 +198,4 @@ describe('getParts additional cases', () => {
         expect(getParts(input)).toEqual(['Hello, world!', 'Hello, world!']);
     });
 
-    test('handles special bracket', () => {
-        expect(getParts('[!instrumental]')).toEqual([]);
-    });
-
-    test('handles special bracket with text', () => {
-        expect(getParts('[!🎸🎹🎺]Hello, world!')).toEqual(['Hello, world!']);
-    });
 }); 
