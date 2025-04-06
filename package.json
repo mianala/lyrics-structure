@@ -1,7 +1,7 @@
 {
   "name": "lyrics-parser",
-  "version": "1.1.0",
-  "description": "Parser for lyrics with bracketed sections and special commands",
+  "version": "1.2.0",
+  "description": "Parser for lyrics with structured sections, names, and indications",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

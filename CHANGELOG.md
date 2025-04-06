@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.2.0] - 2024-03-XX
+
+### Changed
+- Simplified the lyrics format to use clear section markers
+- Updated documentation with clearer examples
+- Improved type definitions for better TypeScript support
+
+### Added
+- Support for section indications in parentheses
+- Better handling of repeated sections
+- More intuitive content structure
+
+### Removed
+- Slide-based content splitting
+- Special command tags
+- Complex formatting options
+
 ## [1.1.0] - 2024-03-XX
 
 ### Added

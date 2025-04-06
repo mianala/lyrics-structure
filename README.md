@@ -1,6 +1,6 @@
 # Lyrics Parser
 
-A TypeScript library for parsing lyrics with bracketed sections and special commands. Supports splitting text into slides and handling special command tags.
+A TypeScript library for parsing lyrics with bracketed sections and special commands. Supports splitting text into structured parts with names and indications.
 
 ## Installation
 
@@ -11,72 +11,43 @@ npm install lyrics-parser
 ## Usage
 
 ```typescript
-import { getParts, getSlideParts } from 'lyrics-parser';
+import { getLyricsParts } from 'lyrics-parser';
 
-// Basic usage with bracketed sections
-const lyrics = `[verse]First verse content[/verse]
-[chorus]Chorus content[/chorus]
-[verse]Second verse content[/verse]`;
+const lyrics = `[verse 1] (first time)
+This is the first verse content
+[/verse 1]
 
-const parts = getParts(lyrics);
-// Result: ['First verse content', 'Chorus content', 'Second verse content']
+[chorus]
+This is the chorus content
+[/chorus]
 
-// Using special command tags
-const withCommands = `[!section1]
-First section content
+[verse 2]
+This is the second verse content
+[/verse 2]`;
 
-[!section2]
-Second section content`;
-
-const slides = getSlideParts(withCommands);
-// Result: ['section1', 'First section content', 'section2', 'Second section content']
+const parts = getLyricsParts(lyrics);
+// Result: Array of LyricPart objects with name, repetition, indication, and content
 ```
 
 ## Features
 
-### getParts
 - Extracts content from bracketed sections
-- Handles repeated sections
-- Supports special command tags
+- Handles section names and indications
+- Supports repeated sections
 - Preserves non-bracketed content
+- TypeScript support
 
-### getSlideParts
-- Splits content into natural sections
-- Handles long lines (>40 characters)
-- Splits on empty lines
-- Maximum 4 lines per slide
-- Supports special command tags
-- Preserves whitespace within lines
+## Example Format
 
-## Test Cases
+```text
+[partname] (indication)
+content
+[/partname]
 
-The library includes comprehensive tests for various scenarios:
-
-1. Basic Functionality
-   - Empty/undefined input handling
-   - Simple bracketed content
-   - Multiple sections
-   - Repeated sections
-   - Non-bracketed content
-
-2. Slide Splitting
-   - Line count based splits
-   - Empty line separation
-   - Long line handling
-   - Mixed content types
-   - Whitespace preservation
-
-3. Special Commands
-   - Basic command tags
-   - Commands with following text
-   - Commands with long content
-   - Unicode command tags
-
-4. Edge Cases
-   - Single line content
-   - Missing closing tags
-   - Invalid tags
-   - Nested tags
+[another part]
+more content
+[/another part]
+```
 
 ## License
 
