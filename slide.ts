@@ -8,28 +8,9 @@
  * @returns An array of content sections
  */
 
-export const getSlideParts = (text?: string): string[]  => {
-    if (!text) return [];
-  
-    const isLineTooLong = (line: string) => line.length > 40;
-  
-    // Process parts in brackets and create a map
-    const partsMap = new Map<string, string>();
-    
-    // First pass: extract all content with closing tags
-    const cleanedText = text.replace(
-        /\[(.*?)\]([\s\S]*?)\[\/\1\]/g,
-        (match, key: string, content) => {
-            if (!partsMap.has(key)) {
-                partsMap.set(key, content.trim());
-            }
-            return `[${key}]`;
-        }
-    );
+import { getLyricsParts } from "./lyrics";
 
-    // Remove text between parentheses
-    const textWithoutParentheses = cleanedText.replace(/\([^)]*\)/g, '');
-  
+    const isLineTooLong = (line: string) => line.length > 40;
     const processContent = (content: string): string[] => {
         const slides: string[] = [];
         let currentSlide: string[] = [];
@@ -63,18 +44,18 @@ export const getSlideParts = (text?: string): string[]  => {
   
         return slides;
     };
+export const getSlideParts = (text?: string): string[]  => {
+    if (!text) return [];
   
+    // Remove text between parentheses
+    const textWithoutParentheses = text.replace(/\([^)]*\)/g, '');
+    const partsText = getLyricsParts(textWithoutParentheses).map((part) => part.content);
+
     const result: string[] = [];
-    const parts = textWithoutParentheses
-        .trim()
-        .split(/\[([^\]]+)\]/)
-        .filter(Boolean);
-  
-    parts.forEach((part) => {
-        if (partsMap.has(part)) {
-            const partContent = partsMap.get(part)!;
-            result.push(...processContent(partContent));
-        } else if (part.trim()) {
+
+
+    partsText.forEach((part) => {
+        if (part) {
             result.push(...processContent(part));
         }
     });
