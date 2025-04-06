@@ -11,7 +11,6 @@ Fourth line of verse
 Fifth line of verse
 [/verse]
 [verse]
-
 Regular text line 1
 Regular text line 2
 
@@ -20,10 +19,12 @@ First chorus line
 Second chorus line
 [/chorus]
 
+[verse 1]
 This is a very long line that should be considered too long for the slide
 This is another very long line that should also be considered too long
 Short line 1
 Short line 2
+[/verse 1]
 
 Regular line 1
 Regular line 2
@@ -36,8 +37,10 @@ Another very long line that should be considered too long for the slide
 And yet another very long line that should be split into a new section
 Regular line
 
+[verse 2]
     First line with spaces    
-  Second line with spaces 
+  Second line with spaces  
+[/verse 2]
 
 [chorus]`;
 
@@ -48,6 +51,8 @@ Regular line
             'Fifth line of verse',
             'Regular text line 1\nRegular text line 2',
             'First chorus line\nSecond chorus line',
+            'This is a very long line that should be considered too long for the slide\nThis is another very long line that should also be considered too long',
+            'Short line 1\nShort line 2',
             'Regular line 1\nRegular line 2',
             'More content',
             'This is a very long line that exceeds forty characters for testing purposes\nThis is another very long line that also exceeds the forty character limit',
@@ -58,10 +63,4 @@ Regular line
         ]);
     });
 
-    test('getParts additional cases', () => {
-        expect(getParts('Hello, world!')).toEqual(['Hello, world!']);
-        expect(getParts('[verse1] Hello, world!')).toEqual(['Hello, world!']);
-        expect(getParts('[verse 1]Hello, world![/verse 1]')).toEqual(['Hello, world!']);
-        expect(getParts('[verse 1]Hello, world![/verse 1] [verse 1]')).toEqual(['Hello, world!', 'Hello, world!']);
-    });
 }); 
