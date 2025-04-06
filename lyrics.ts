@@ -4,6 +4,24 @@ export type LyricPart = {
     indication: string | null;
     content: string | undefined;
 };
+/**
+ * Splits lyrics into structured parts, handling named sections, repetitions, and indications.
+ * Works with lyrics formatted using square brackets for section names and optional parentheses for indications.
+ * 
+ * Example input:
+ * ```
+ * [verse 1] (first time)
+ * Lyrics content here
+ * [/verse 1]
+ * 
+ * [chorus]
+ * Chorus lyrics
+ * [/chorus]
+ * ```
+ * 
+ * @param lyrics - The input lyrics text to be parsed into parts
+ * @returns Array of LyricPart objects containing structured lyrics data
+ */
 
 export function getLyricsParts(lyrics: string): LyricPart[] {
     const parts: LyricPart[] = [];

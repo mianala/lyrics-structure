@@ -1,4 +1,4 @@
-import { getSlideParts } from './index.js';
+import { getSlideParts } from './slide.js';
 
 describe('Comprehensive Tests', () => {
     test('handles all cases in one comprehensive input', () => {
