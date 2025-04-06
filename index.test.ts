@@ -11,6 +11,7 @@ Fourth line of verse
 Fifth line of verse
 [/verse]
 [verse]
+(inside parentheses)
 Regular text line 1
 Regular text line 2
 

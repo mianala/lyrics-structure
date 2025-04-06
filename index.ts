@@ -1,6 +1,3 @@
-
-
-
 /**
  * Splits text into natural sections based on text structure.
  * Works with plain text without requiring markdown or special formatting.
@@ -30,18 +27,8 @@ export const getSlideParts = (text?: string): string[]  => {
         }
     );
 
-    // Handle special command tags
-    const processedText = cleanedText.replace(
-        /\[!([^\]]+)\]/g,
-        (match, command) => {
-            // Store the command in the parts map with a special prefix
-            const key = `!${command}`;
-            if (!partsMap.has(key)) {
-                partsMap.set(key, command);
-            }
-            return `[${key}]`;
-        }
-    );
+    // Remove text between parentheses
+    const textWithoutParentheses = cleanedText.replace(/\([^)]*\)/g, '');
   
     const processContent = (content: string): string[] => {
         const slides: string[] = [];
@@ -78,7 +65,7 @@ export const getSlideParts = (text?: string): string[]  => {
     };
   
     const result: string[] = [];
-    const parts = processedText
+    const parts = textWithoutParentheses
         .trim()
         .split(/\[([^\]]+)\]/)
         .filter(Boolean);
