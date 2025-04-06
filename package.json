@@ -1,5 +1,5 @@
 {
-  "name": "lyrics-parser",
+  "name": "lyrics-structure",
   "version": "1.2.0",
   "description": "Parser for lyrics with structured sections, names, and indications",
   "main": "dist/index.js",
