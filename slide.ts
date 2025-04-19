@@ -10,7 +10,7 @@
 
 import { getLyricsParts } from './lyrics';
 
-const isLineTooLong = (line: string) => line.length > 40;
+const isLineTooLong = (line: string) => line.length > 60;
 const processContent = (content: string): string[] => {
   const slides: string[] = [];
   let currentSlide: string[] = [];
