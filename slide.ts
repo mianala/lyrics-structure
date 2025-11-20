@@ -47,9 +47,7 @@ const processContent = (content: string): string[] => {
 export const getSlideParts = (text?: string): string[] => {
   if (!text) return [];
 
-  // Remove text between parentheses
-  const textWithoutParentheses = text.replace(/\([^)]*\)/g, '');
-  const partsText = getLyricsParts(textWithoutParentheses).map((part) => part.content);
+  const partsText = getLyricsParts(text).map((part) => part.content);
 
   const result: string[] = [];
 

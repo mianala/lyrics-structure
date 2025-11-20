@@ -50,7 +50,7 @@ Regular line
             'Fifth line of verse',
             'First line of verse\nSecond line of verse\nThird line of verse\nFourth line of verse',
             'Fifth line of verse',
-            'Regular text line 1\nRegular text line 2',
+            '(inside parentheses)\nRegular text line 1\nRegular text line 2',
             'First chorus line\nSecond chorus line',
             'This is a very long line that should be considered too long for the slide\nThis is another very long line that should also be considered too long',
             'Short line 1\nShort line 2',
