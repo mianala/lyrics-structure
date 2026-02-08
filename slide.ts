@@ -4,14 +4,14 @@
  * Empty lines are treated as natural separators between parts.
  *
  * @param text - The input text to be split into sections
- * @param maxLinesPerSlide - Maximum number of lines to include in a single slide (default: 6)
+ * @param maxLines - Maximum number of lines to include in a single slide (default: 4)
  * @returns An array of content sections
  */
 
 import { getLyricsParts } from './lyrics';
 
 const isLineTooLong = (line: string) => line.length > 60;
-const processContent = (content: string): string[] => {
+const processContent = (content: string, maxLines: number): string[] => {
   const slides: string[] = [];
   let currentSlide: string[] = [];
 
@@ -27,7 +27,7 @@ const processContent = (content: string): string[] => {
     }
 
     if (
-      currentSlide.length >= 4 ||
+      currentSlide.length >= maxLines ||
       (currentSlide.length >= 2 && currentSlide.filter(isLineTooLong).length >= 2)
     ) {
       slides.push(currentSlide.join('\n'));
@@ -44,7 +44,7 @@ const processContent = (content: string): string[] => {
   return slides;
 };
 
-export const getSlideParts = (text?: string): string[] => {
+export const getSlideParts = (text?: string, maxLines: number = 4): string[] => {
   if (!text) return [];
 
   const partsText = getLyricsParts(text).map((part) => part.content);
@@ -53,7 +53,7 @@ export const getSlideParts = (text?: string): string[] => {
 
   partsText.forEach((part) => {
     if (part) {
-      result.push(...processContent(part));
+      result.push(...processContent(part, maxLines));
     }
   });
 
