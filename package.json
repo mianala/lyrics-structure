@@ -1,11 +1,15 @@
 {
   "name": "lyrics-structure",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Parse lyrics with bracketed sections into structured parts, with slide generation for presentations",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
+    "prepublishOnly": "npm run build",
     "test": "jest",
     "test:watch": "jest --watch",
     "format": "prettier --write \"**/*.{ts,js,json,md}\""
